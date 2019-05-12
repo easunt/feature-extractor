@@ -26,7 +26,6 @@ public class UrlFeatureUtil {
         resultList.add(this.lengthOfSubDomain());
         resultList.add(this.ttlValue());
         resultList.add(this.rankOfAlexa());
-
         System.out.println(resultList);
         return null;
     }
