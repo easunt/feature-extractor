@@ -1,5 +1,7 @@
 package com.ovio.extractor.utils;
 
+import net.minidev.json.JSONArray;
+import org.apache.tomcat.util.json.JSONParser;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.util.StringUtils;
 import org.w3c.dom.Document;
@@ -11,6 +13,8 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +30,8 @@ public class UrlFeatureUtil {
         resultList.add(this.lengthOfSubDomain());
         resultList.add(this.ttlValue());
         resultList.add(this.rankOfAlexa());
+        resultList.add(this.levenDistWithGoogleSuggestion(true));
+
         System.out.println(resultList);
         return null;
     }
@@ -38,7 +44,17 @@ public class UrlFeatureUtil {
         return Integer.toString(this.urlParser.getSubDomain().length());
     }
 
-    public String levenDistWithGoogleSuggestion(boolean isPrimary) {
+    public String levenDistWithGoogleSuggestion(boolean isPrimary) throws Exception{
+        String target = isPrimary ? urlParser.getPrimaryDomain() : urlParser.getSubDomain();
+        URL url = new URL("http://suggestqueries.google.com/complete/search?output=firefox&q=" + target);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        connection.setRequestProperty("Accept", "application/json");
+        BufferedReader reader = new BufferedReader(new InputStreamReader((connection.getInputStream())));
+        System.out.println(reader.readLine());
+        //JSONParser jsonParser = new JSONParser(reader.readLine());
+
+
         return null;
     }
 
@@ -57,11 +73,11 @@ public class UrlFeatureUtil {
                     break;
                 count++;
             }
-            if(!StringUtils.isEmpty(message))
+            if (!StringUtils.isEmpty(message))
                 message = message.split("ttl=")[1].split(" ")[0];   //FIXME : parsing logic for "icmp_seq=0 ttl=239 time=36.424 ms"
 
         } catch (Exception e) {
-           e.printStackTrace();
+            e.printStackTrace();
         } finally {
             try {
                 if (process != null) process.destroy();
@@ -83,8 +99,8 @@ public class UrlFeatureUtil {
         try {
             Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse("http://data.alexa.com/data?cli=10&dat=snbamz&url=" + urlParser.getHost());
             XPath xpath = XPathFactory.newInstance().newXPath();
-            Node rank = (Node)xpath.evaluate("/ALEXA//SD/POPULARITY", document, XPathConstants.NODE);
-            if(rank != null){
+            Node rank = (Node) xpath.evaluate("/ALEXA//SD/POPULARITY", document, XPathConstants.NODE);
+            if (rank != null) {
                 result = rank.getAttributes().getNamedItem("TEXT").getTextContent();
             }
         } catch (Exception e) {
@@ -95,5 +111,35 @@ public class UrlFeatureUtil {
 
     public String numberOfBadTerms() {
         return null;
+    }
+
+    private int calculateLevensteinDist(String str1, String str2) {
+        if (StringUtils.isEmpty(str1))
+            return str2.length();
+        if (StringUtils.isEmpty(str2))
+            return str1.length();
+        if (str1.length() > str2.length()) {
+            String tempStr = str1;
+            str1 = str2;
+            str2 = tempStr;
+        }
+        int[] str1Array1 = new int[str1.length() + 1];
+        int[] str1Array2 = new int[str1.length() + 1];
+
+        for (int i = 1; i <= str1.length(); i++) str1Array1[i] = i;
+        str1Array2[0] = 1;
+
+        for (int j = 1; j <= str2.length(); j++) {
+            for (int i = 1; i <= str1.length(); i++) {
+                int c = (str1.charAt(i - 1) == str2.charAt(j - 1) ? 0 : 1);
+                str1Array2[i] = Math.min(str1Array1[i - 1] + c, Math.min(str1Array1[i] + 1, str1Array2[i - 1] + 1));
+            }
+
+            int[] temp = str1Array1;
+            str1Array1 = str1Array2;
+            str1Array2 = temp;
+            str1Array2[0] = str1Array1[0] + 1;
+        }
+        return str1Array1[str1.length()];
     }
 }

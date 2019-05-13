@@ -41,7 +41,7 @@ public class UrlParser {
 
     public String getPrimaryDomain() {
         String subDomain = this.getSubDomain();
-        return this.targetUrl.split(this.getSubDomain()+"|\\.")[0];
+        return this.targetUrl.split(subDomain + "|\\.")[2];
     }
 
     public String getHost() {
