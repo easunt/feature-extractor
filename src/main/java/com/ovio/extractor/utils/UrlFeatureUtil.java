@@ -1,6 +1,8 @@
 package com.ovio.extractor.utils;
 
 import org.json.JSONArray;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.util.StringUtils;
 import org.w3c.dom.Document;
@@ -24,8 +26,15 @@ public class UrlFeatureUtil {
     private final String[] badTerms = {"update", "confirm", "user", "customer", "client", "suspend", "restrict",
             "hold", "verify", "account", "login", "username", "password", "ssn", "sosical", "security", "emailID", "emailPASS",
             "phone", "signin", "hotmail", "expires", "notification", "cancellation", "immediately"}; //FIXME : maneged using enum or something
+    private Logger logger = LoggerFactory.getLogger("aaa");
 
     public String extractUrlFeatures(String targetUrl) throws Exception {
+        this.logger.trace("Hello world.");
+        this.logger.debug("Hello world."); //debug level로 해당 메시지의 로그를 찍겠다.
+        this.logger.info("Hello world.");
+        this.logger.warn("Hello world.");
+        this.logger.error("Hello world.");
+
         this.urlParser = new UrlParser(targetUrl);
         List<String> resultList = new ArrayList<>();
         resultList.add(this.numberOfSlash());
