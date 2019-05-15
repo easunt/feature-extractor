@@ -26,17 +26,14 @@ public class UrlFeatureUtil {
     private final String[] badTerms = {"update", "confirm", "user", "customer", "client", "suspend", "restrict",
             "hold", "verify", "account", "login", "username", "password", "ssn", "sosical", "security", "emailID", "emailPASS",
             "phone", "signin", "hotmail", "expires", "notification", "cancellation", "immediately"}; //FIXME : maneged using enum or something
-    private Logger logger = LoggerFactory.getLogger("aaa");
+    private Logger logger = LoggerFactory.getLogger("com.ovio.extractor.utils.UrlFeatureUtil");
+    private CommonUtil commonUtil = new CommonUtil();
 
     public String extractUrlFeatures(String targetUrl) throws Exception {
-        this.logger.trace("Hello world.");
-        this.logger.debug("Hello world."); //debug level로 해당 메시지의 로그를 찍겠다.
-        this.logger.info("Hello world.");
-        this.logger.warn("Hello world.");
-        this.logger.error("Hello world.");
-
         this.urlParser = new UrlParser(targetUrl);
         List<String> resultList = new ArrayList<>();
+        this.logger.info("=======================================================================================");
+        this.logger.info("Extract url features. Target url is [" + targetUrl + "].");
         resultList.add(this.numberOfSlash());
         resultList.add(this.lengthOfSubDomain());
         resultList.add(this.ttlValue());
@@ -47,8 +44,10 @@ public class UrlFeatureUtil {
         resultList.add(this.numberOfBadTerms());
         resultList.add(this.hasPrefixAndSuffix());
 
-        System.out.println(resultList);
-        return null;
+        this.logger.info("URl feature extracting result is " + resultList.toString() + ".");
+        this.logger.info("=======================================================================================");
+
+        return resultList.toString();
     }
 
     //FIXME: google page rank url occur 404 not found error. Maybe service was closed or changed different url. Find new url.
@@ -74,41 +73,47 @@ public class UrlFeatureUtil {
     }
 
     private String numberOfSlash() {
-        return Integer.toString(this.urlParser.getTargetUrl().split("/").length - 1);
+        String result = Integer.toString(this.urlParser.getTargetUrl().split("/").length - 1);
+        this.logger.info("URL feature (Number of Slash in URL) result  is " + result + ".");
+        return result;
     }
 
     private String lengthOfSubDomain() {
-        return Integer.toString(this.urlParser.getSubDomain().length());
+        String result = Integer.toString(this.urlParser.getSubDomain().length());
+        this.logger.info("URL feature (Length of sub domain) result  is " + result + ".");
+        return result;
     }
 
     private String levenDistWithGoogleSuggestion(boolean isPrimary) {
         String target = isPrimary ? urlParser.getPrimaryDomain() : urlParser.getSubDomain();
-        if (StringUtils.isEmpty(target)) return "0";
-
         String suggestion = "";
-        String result = "";
+        String result = "0";
 
-        try {
-            URL url = new URL("http://suggestqueries.google.com/complete/search?output=firefox&q=" + target);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setRequestProperty("Accept", "application/json");
-            BufferedReader reader = new BufferedReader(new InputStreamReader((connection.getInputStream())));
-            String jsonString = reader.readLine();
+        if (!StringUtils.isEmpty(target)) {
+            try {
+                URL url = new URL("http://suggestqueries.google.com/complete/search?output=firefox&q=" + target);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setRequestProperty("Accept", "application/json");
+                BufferedReader reader = new BufferedReader(new InputStreamReader((connection.getInputStream())));
+                String jsonString = reader.readLine();
 
-            connection.disconnect();
-            reader.close();
+                connection.disconnect();
+                reader.close();
 
-            JSONArray jsonArray = new JSONArray(jsonString);
-            JSONArray suggestArray = (JSONArray) jsonArray.get(1);
-            suggestion = (String) suggestArray.get(0);
+                JSONArray jsonArray = new JSONArray(jsonString);
+                JSONArray suggestArray = (JSONArray) jsonArray.get(1);
+                this.logger.debug("Google suggestion for [" + target + "] is " + suggestArray);
+                suggestion = (String) suggestArray.get(0);
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            result = Integer.toString(this.calculateLevensteinDist(target, suggestion));
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                result = Integer.toString(this.commonUtil.calculateLevensteinDist(target, suggestion));
+            }
         }
 
+        this.logger.info("URL feature (Levenshtein distance between google suggestion and " + (isPrimary ? "primary" : "sub") + "domain ) result is " + result + ".");
         return result;
     }
 
@@ -116,7 +121,7 @@ public class UrlFeatureUtil {
         Process process = null;
         Runtime runtime = Runtime.getRuntime();
         BufferedReader successBufferReader = null;
-        String message = "-1";
+        String result = "-1";
 
         try {
             process = runtime.exec("ping " + this.urlParser.getHost());
@@ -129,8 +134,10 @@ public class UrlFeatureUtil {
                     break;
                 count++;
             }
+
+            logger.debug("Ping command result is " + input);
             if (!StringUtils.isEmpty(input) && count < 3)
-                message = input.split("ttl=")[1].split(" ")[0];   //FIXME : parsing logic for "icmp_seq=0 ttl=239 time=36.424 ms"
+                result = input.split("ttl=")[1].split(" ")[0];   //FIXME : parsing logic for "icmp_seq=0 ttl=239 time=36.424 ms"
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -142,17 +149,19 @@ public class UrlFeatureUtil {
                 e.printStackTrace();
             }
         }
-        return message;
+        this.logger.info("URL feature (Value of TTL)" + "result is " + result + ".");
+        return result;
     }
 
-    public String recordOfWhois() {
+    private String recordOfWhois() {
         WhoisClient whoisClient = new WhoisClient();
         String result = "0";
         try {
             whoisClient.connect(WhoisClient.DEFAULT_HOST);
             String whoisData1 = whoisClient.query("=" + this.urlParser.getHost());
+            this.logger.debug("Whois record of ["+ this.urlParser.getHost()+"] " + whoisData1);
 
-            if(!whoisData1.contains("No match for"))
+            if (!whoisData1.contains("No match for"))
                 result = "1";
 
             whoisClient.disconnect();
@@ -160,10 +169,12 @@ public class UrlFeatureUtil {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        this.logger.info("URL feature (Exist whois record)" + "result is " + result + ".");
         return result;
     }
 
-    public String rankOfAlexa() {
+    private String rankOfAlexa() {
         //use Document builder when parse xml file. Because xml file is very small. SAX is useful when xml file is big.
         String result = "-1";
         try {
@@ -176,50 +187,26 @@ public class UrlFeatureUtil {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        this.logger.info("URL feature (Value of AlexaRank) result is " + result + ".");
         return result;
     }
 
-    public String numberOfBadTerms() {
-        int count = 0;
+    private String numberOfBadTerms() {
+        int result = 0;
         for (int i = 0; i < this.badTerms.length; i++) {
             String target = this.urlParser.getTargetUrl();
-            count += (target.split(this.badTerms[i]).length - 1);
+            result += (target.split(this.badTerms[i]).length - 1);
         }
 
-        return Integer.toString(count);
-    }
-
-    private int calculateLevensteinDist(String str1, String str2) {
-        if (StringUtils.isEmpty(str1))
-            return str2.length();
-        if (StringUtils.isEmpty(str2))
-            return str1.length();
-        if (str1.length() > str2.length()) {
-            String tempStr = str1;
-            str1 = str2;
-            str2 = tempStr;
-        }
-        int[] str1Array1 = new int[str1.length() + 1];
-        int[] str1Array2 = new int[str1.length() + 1];
-
-        for (int i = 1; i <= str1.length(); i++) str1Array1[i] = i;
-        str1Array2[0] = 1;
-
-        for (int j = 1; j <= str2.length(); j++) {
-            for (int i = 1; i <= str1.length(); i++) {
-                int c = (str1.charAt(i - 1) == str2.charAt(j - 1) ? 0 : 1);
-                str1Array2[i] = Math.min(str1Array1[i - 1] + c, Math.min(str1Array1[i] + 1, str1Array2[i - 1] + 1));
-            }
-
-            int[] temp = str1Array1;
-            str1Array1 = str1Array2;
-            str1Array2 = temp;
-            str1Array2[0] = str1Array1[0] + 1;
-        }
-        return str1Array1[str1.length()];
+        this.logger.info("URL feature (Count of bad terms)" + "result is " + result + ".");
+        return Integer.toString(result);
     }
 
     private String hasPrefixAndSuffix() {
-         return this.urlParser.getTargetUrl().contains("-") ? "1" : "0";
+        String result = this.urlParser.getTargetUrl().contains("-") ? "1" : "0";
+        this.logger.info("URL feature (Exist prefix or suffix, Count of '-' in URL) result is " + result + ".");
+        return result;
     }
+
 }

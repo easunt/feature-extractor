@@ -52,14 +52,14 @@ public class UrlParser {
     public String getPrimaryDomain() {
         if (StringUtils.isEmpty(this.primaryDomain)) {
             String subDomain = this.getSubDomain();
-            this.primaryDomain = this.targetUrl.split(subDomain + "|\\.")[2];
+            this.primaryDomain = this.targetUrl.split(subDomain + "\\.")[1];
         }
         return this.primaryDomain;
     }
 
     public String getHost() {
         if (StringUtils.isEmpty(this.host)) {
-            this.host = this.urlObj.getHost().replace(this.getSubDomain(), "").replace("www.", "");
+            this.host = this.urlObj.getHost().replace(this.getSubDomain()+".", "").replace("www.", "");
         }
         return this.host;
     }

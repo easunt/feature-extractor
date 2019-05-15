@@ -22,12 +22,6 @@
             <maxHistory>30</maxHistory>
         </rollingPolicy>
     </appender> -->
-    <logger name="com.ovio.extractor" level="DEBUG">
-        <appender-ref ref="SAMPLE" />
-    </logger>
-    <logger name="com.ovio.extractor" level="INFO">
-        <appender-ref ref="SAMPLE" />
-    </logger>
     <root level="INFO">
         <appender-ref ref="SAMPLE" />
     </root>
