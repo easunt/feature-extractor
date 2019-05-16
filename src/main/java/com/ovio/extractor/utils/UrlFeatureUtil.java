@@ -29,7 +29,7 @@ public class UrlFeatureUtil {
     private Logger logger = LoggerFactory.getLogger("com.ovio.extractor.utils.UrlFeatureUtil");
     private CommonUtil commonUtil = new CommonUtil();
 
-    public String extractUrlFeatures(String targetUrl) throws Exception {
+    public String extractFeatures(String targetUrl) throws Exception {
         this.urlParser = new UrlParser(targetUrl);
         List<String> resultList = new ArrayList<>();
         this.logger.info("=======================================================================================");

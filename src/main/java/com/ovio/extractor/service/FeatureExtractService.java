@@ -6,13 +6,15 @@ import com.ovio.extractor.utils.UrlParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Service
 public class FeatureExtractService {
 
     private final UrlFeatureUtil urlFeatureUtil;
     private final HtmlFeatureUtil htmlFeatureUtil;
-    private UrlParser urlParser;
 
     @Autowired
     public FeatureExtractService(UrlFeatureUtil urlFeatureUtil, HtmlFeatureUtil htmlFeatureUtil) {
@@ -21,7 +23,11 @@ public class FeatureExtractService {
     }
 
     public String extractFeatures(String targetUrl) throws Exception {
-        return urlFeatureUtil.extractUrlFeatures(targetUrl);
+        String urlFeatues = urlFeatureUtil.extractFeatures(targetUrl);
+        //TODO: create html feature extractor code..... It's boring...
+        String htmlFeatures = htmlFeatureUtil.extractFeatures(targetUrl);
+
+        return urlFeatues;
     }
 
 
