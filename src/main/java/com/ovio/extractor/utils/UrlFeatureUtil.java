@@ -1,5 +1,6 @@
 package com.ovio.extractor.utils;
 
+import com.ovio.extractor.entity.UrlFeature;
 import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +30,7 @@ public class UrlFeatureUtil {
     private Logger logger = LoggerFactory.getLogger("com.ovio.extractor.utils.UrlFeatureUtil");
     private CommonUtil commonUtil = new CommonUtil();
 
-    public String extractFeatures(String targetUrl) throws Exception {
+    public UrlFeature extractFeatures(String targetUrl, Long urlId) throws Exception {
         this.urlParser = new UrlParser(targetUrl);
         List<String> resultList = new ArrayList<>();
         this.logger.info("=======================================================================================");
@@ -44,10 +45,14 @@ public class UrlFeatureUtil {
         resultList.add(this.numberOfBadTerms());
         resultList.add(this.hasPrefixAndSuffix());
 
+        UrlFeature urlFeature = new UrlFeature();
+        urlFeature.setUrlId(urlId);
+        urlFeature.setFeature(resultList.toString());
+
         this.logger.info("URl feature extracting result is " + resultList.toString() + ".");
         this.logger.info("=======================================================================================");
 
-        return resultList.toString();
+        return urlFeature;
     }
 
     //FIXME: google page rank url occur 404 not found error. Maybe service was closed or changed different url. Find new url.
