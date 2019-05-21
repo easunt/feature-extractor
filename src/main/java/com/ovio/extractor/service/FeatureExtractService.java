@@ -9,6 +9,8 @@ import com.ovio.extractor.utils.UrlFeatureUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 
 @Service
 public class FeatureExtractService {
@@ -36,6 +38,12 @@ public class FeatureExtractService {
         //TODO: create html feature extractor code..... It's boring...
         String htmlFeatures = htmlFeatureUtil.extractFeatures(targetUrl);
         return urlFeature.toString();
+    }
+
+    public String extractAllUrlsFeature() throws Exception {
+        List<Url> urls = urlRepository.findAll();
+
+        UrlFeature urlFeature = urlFeatureUtil.extractFeatures()
     }
 
 }
