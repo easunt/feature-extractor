@@ -11,7 +11,7 @@ public class UrlParser {
     private String subDomain = null;
     private String host = null;
 
-    public UrlParser(String targetUrl) throws Exception {
+    UrlParser(String targetUrl) throws Exception {
         this.targetUrl = targetUrl;
         this.urlObj = new URL(targetUrl);
     }
@@ -24,7 +24,7 @@ public class UrlParser {
         this.urlObj = urlObj;
     }
 
-    public String getTargetUrl() {
+    String getTargetUrl() {
         return targetUrl;
     }
 
@@ -32,34 +32,34 @@ public class UrlParser {
         this.targetUrl = targetUrl;
     }
 
-    public String getSubDomain() {
+    String getSubDomain() {
         if (this.subDomain == null) {
-            String[] dotSplitArray = this.targetUrl.split("://")[1].split("\\.");
-            StringBuilder subDomain = new StringBuilder();
+            this.getPrimaryDomain();
+            String host = this.urlObj.getHost();
+            String[] splitArray = host.split(this.primaryDomain + "\\.");
 
-            for (int idx = 0; idx < dotSplitArray.length - 2; idx++) {
-                subDomain.append(".").append(dotSplitArray[idx]);
-            }
-            if (subDomain.length() == 0) {
+            if (splitArray.length > 0 && !StringUtils.isEmpty(splitArray[0]) && !splitArray[0].equals("www.")) {
+                if (splitArray[0].contains("."))
+                    this.subDomain = splitArray[0].substring(0, splitArray[0].lastIndexOf('.'));
+                else
+                    this.subDomain = splitArray[0];
+            } else
                 this.subDomain = "";
-            } else {
-                this.subDomain = subDomain.substring(1).equals("www") ? "" : subDomain.substring(1);
-            }
         }
         return this.subDomain;
     }
 
-    public String getPrimaryDomain() {
+    String getPrimaryDomain() {
         if (StringUtils.isEmpty(this.primaryDomain)) {
-            String subDomain = this.getSubDomain();
-            this.primaryDomain = this.targetUrl.split(subDomain + "\\.")[1];
+            String host = this.urlObj.getHost().replaceAll(".*\\.(?=.*\\.)", "");
+            this.primaryDomain = host.split("\\.")[0];
         }
         return this.primaryDomain;
     }
 
-    public String getHost() {
+    String getHost() {
         if (StringUtils.isEmpty(this.host)) {
-            this.host = this.urlObj.getHost().replace(this.getSubDomain()+".", "").replace("www.", "");
+            this.host = this.urlObj.getHost().replace(this.getSubDomain() + ".", "").replace("www.", "");
         }
         return this.host;
     }

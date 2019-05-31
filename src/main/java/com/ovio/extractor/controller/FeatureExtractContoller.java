@@ -19,8 +19,9 @@ public class FeatureExtractContoller {
         return featureExtractService.extractFeatures(url);
     }
 
-    @RequestMapping(value = "/extactAll", method = RequestMethod.POST)
-    public String extractAllUrlsFeature() throws Exception {
-        return featureExtractService.extractAllUrlsFeature();
+    @RequestMapping(value = "/extractAll", method = RequestMethod.POST)
+    public String extractAllUrlsFeature(@RequestParam String start) throws Exception {
+        return featureExtractService.extractAllUrlsFeature(start);
     }
+
 }

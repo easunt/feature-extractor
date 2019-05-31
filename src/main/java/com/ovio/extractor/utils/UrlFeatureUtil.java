@@ -32,9 +32,11 @@ public class UrlFeatureUtil {
 
     public UrlFeature extractFeatures(String targetUrl, Long urlId) throws Exception {
         this.urlParser = new UrlParser(targetUrl);
+
         List<String> resultList = new ArrayList<>();
         this.logger.info("=======================================================================================");
         this.logger.info("Extract url features. Target url is [" + targetUrl + "].");
+        this.logger.info(this.urlParser.getSubDomain());
         resultList.add(this.numberOfSlash());
         resultList.add(this.lengthOfSubDomain());
         resultList.add(this.ttlValue());
@@ -112,7 +114,7 @@ public class UrlFeatureUtil {
                 suggestion = (String) suggestArray.get(0);
 
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Can't not find google suggestion.");
             } finally {
                 result = Integer.toString(this.commonUtil.calculateLevensteinDist(target, suggestion));
             }
@@ -145,7 +147,7 @@ public class UrlFeatureUtil {
                 result = input.split("ttl=")[1].split(" ")[0];   //FIXME : parsing logic for "icmp_seq=0 ttl=239 time=36.424 ms"
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Can't not find ttl value.");
         } finally {
             try {
                 if (process != null) process.destroy();

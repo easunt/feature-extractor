@@ -40,10 +40,13 @@ public class FeatureExtractService {
         return urlFeature.toString();
     }
 
-    public String extractAllUrlsFeature() throws Exception {
-        List<Url> urls = urlRepository.findAll();
+    public String extractAllUrlsFeature(String start) throws Exception {
+        List<Url> urls = urlRepository.findAllByIdGreaterThan(Long.valueOf(start));
+        for (Url target : urls) {
+            UrlFeature urlFeature = urlFeatureUtil.extractFeatures(target.getUrl(), target.getId());
+            urlFeatureRepository.save(urlFeature);
+        }
 
-        UrlFeature urlFeature = urlFeatureUtil.extractFeatures()
+        return "success";
     }
-
 }
