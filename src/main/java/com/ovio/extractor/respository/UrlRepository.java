@@ -7,4 +7,7 @@ import java.util.List;
 
 public interface UrlRepository extends JpaRepository<Url, Long> {
     List<Url> findAllByIdGreaterThan(Long id);
+
+    List<Url> findAllByIdIsBetween(Long start, Long end);
+
 }

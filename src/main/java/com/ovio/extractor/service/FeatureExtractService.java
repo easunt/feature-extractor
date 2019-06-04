@@ -8,6 +8,7 @@ import com.ovio.extractor.utils.HtmlFeatureUtil;
 import com.ovio.extractor.utils.UrlFeatureUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.util.StringUtils;
 
 import java.util.List;
 
@@ -40,8 +41,18 @@ public class FeatureExtractService {
         return urlFeature.toString();
     }
 
-    public String extractAllUrlsFeature(String start) throws Exception {
-        List<Url> urls = urlRepository.findAllByIdGreaterThan(Long.valueOf(start));
+    public String extractAllUrlsFeature(String start, String end) throws Exception {
+
+        List<Url> urls = null;
+
+        if (StringUtils.isEmpty(start) && StringUtils.isEmpty(end))
+            urls = urlRepository.findAll();
+        else if (!StringUtils.isEmpty(start) && StringUtils.isEmpty(end))
+            urls = urlRepository.findAllByIdGreaterThan(Long.valueOf(start));
+        else
+            urls = urlRepository.findAllByIdIsBetween(Long.valueOf(start), Long.valueOf(end));
+
+        assert urls != null;
         for (Url target : urls) {
             UrlFeature urlFeature = urlFeatureUtil.extractFeatures(target.getUrl(), target.getId());
             urlFeatureRepository.save(urlFeature);
