@@ -1,28 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <property name="LOGS_ABSOLUTE_PATH" value="./logs" />
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
 
-    <appender name="SAMPLE" class="ch.qos.logback.core.ConsoleAppender">
+    <property name="LOG_PATH" value="./logs"/>
+    <property name="APPLICATION_FILE" value="/application"/>
+    <property name="ERROR_FILE" value="/exception"/>
+    <timestamp key="TIME_STAMP" datePattern="yyyyMMdd"/>
+
+    <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>[%d{yyyy-MM-dd HH:mm:ss}:%-3relative][%thread] %-5level %logger{35} - %msg%n</pattern>
+            <pattern>[%d{yyyy-MM-dd HH:mm:ss}][%-5thread] %highlight([%-5level]) %magenta(%logger{35}) - %msg%n
+            </pattern>
+            <charset>utf8</charset>
         </encoder>
     </appender>
-    <!--<appender name="ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOGS_ABSOLUTE_PATH}/logback.log</file>
+
+    <appender name="ApplicationFileAppender" class="ch.qos.logback.core.FileAppender">
+        <file>${LOG_PATH}${APPLICATION_FILE}-${TIME_STAMP}.log</file>
         <encoder>
-            <pattern>[%d{yyyy-MM-dd HH:mm:ss}:%-3relative][%thread] %-5level %logger{35} - %msg%n</pattern>
+            <pattern>[%d{yyyy-MM-dd HH:mm:ss}][%-5thread] %highlight([%-5level]) %magenta(%logger{35}) - %msg%n
+            </pattern>
+            <charset>utf8</charset>
         </encoder>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOGS_ABSOLUTE_PATH}/logback.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
-            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                or whenever the file size reaches 100MB
-                <maxFileSize>5MB</maxFileSize>
-                kb, mb, gb
-            </timeBasedFileNamingAndTriggeringPolicy>
-            <maxHistory>30</maxHistory>
-        </rollingPolicy>
-    </appender> -->
+    </appender>
+
+    <appender name="ErrorFileAppender" class="ch.qos.logback.core.FileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>error</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <file>${LOG_PATH}${ERROR_FILE}-${TIME_STAMP}.log</file>
+        <encoder>
+            <pattern>[%d{yyyy-MM-dd HH:mm:ss}][%-5thread] %highlight([%-5level]) %magenta(%logger{35}) - %msg%n
+            </pattern>
+            <charset>utf8</charset>
+        </encoder>
+    </appender>
+
+    <logger name="com.ovio.extractor" level="DEBUG">
+        <appender-ref ref="Console"/>
+        <appender-ref ref="ApplicationFileAppender"/>
+    </logger>
+    <logger name="com.ovio.extractor" level="ERROR">
+        <appender-ref ref="ErrorFileAppender"/>
+    </logger>
     <root level="INFO">
-        <appender-ref ref="SAMPLE" />
+        <appender-ref ref="Console"/>
     </root>
 </configuration>

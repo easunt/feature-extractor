@@ -2,8 +2,8 @@ package com.ovio.extractor.utils;
 
 import org.thymeleaf.util.StringUtils;
 
-public class CommonUtil {
-    public int calculateLevensteinDist(String str1, String str2) {
+class CommonUtil {
+    int calculateLevensteinDist(String str1, String str2) {
         if (StringUtils.isEmpty(str1))
             return str2.length();
         if (StringUtils.isEmpty(str2))

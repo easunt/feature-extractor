@@ -1,9 +1,8 @@
 package com.ovio.extractor.utils;
 
 import com.ovio.extractor.entity.UrlFeature;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.util.StringUtils;
 import org.w3c.dom.Document;
@@ -22,21 +21,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@Slf4j
 public class UrlFeatureUtil {
     private UrlParser urlParser;
     private final String[] badTerms = {"update", "confirm", "user", "customer", "client", "suspend", "restrict",
             "hold", "verify", "account", "login", "username", "password", "ssn", "sosical", "security", "emailID", "emailPASS",
-            "phone", "signin", "hotmail", "expires", "notification", "cancellation", "immediately"}; //FIXME : maneged using enum or something
-    private Logger logger = LoggerFactory.getLogger("com.ovio.extractor.utils.UrlFeatureUtil");
+            "phone", "signin", "hotmail", "expires", "notification", "cancellation", "immediately"};
     private CommonUtil commonUtil = new CommonUtil();
 
     public UrlFeature extractFeatures(String targetUrl, Long urlId) throws Exception {
         this.urlParser = new UrlParser(targetUrl);
-
         List<String> resultList = new ArrayList<>();
-        this.logger.info("=======================================================================================");
-        this.logger.info("Extract url features. Target url is [" + targetUrl + "].");
-        this.logger.info(this.urlParser.getSubDomain());
+
         resultList.add(this.numberOfSlash());
         resultList.add(this.lengthOfSubDomain());
         resultList.add(this.ttlValue());
@@ -50,9 +46,6 @@ public class UrlFeatureUtil {
         UrlFeature urlFeature = new UrlFeature();
         urlFeature.setUrlId(urlId);
         urlFeature.setFeature(resultList.toString());
-
-        this.logger.info("URl feature extracting result is " + resultList.toString() + ".");
-        this.logger.info("=======================================================================================");
 
         return urlFeature;
     }
@@ -81,13 +74,13 @@ public class UrlFeatureUtil {
 
     private String numberOfSlash() {
         String result = Integer.toString(this.urlParser.getTargetUrl().split("/").length - 1);
-        this.logger.info("URL feature (Number of Slash in URL) result  is " + result + ".");
+        log.info("URL feature (Number of Slash in URL) result  is " + result + ".");
         return result;
     }
 
     private String lengthOfSubDomain() {
         String result = Integer.toString(this.urlParser.getSubDomain().length());
-        this.logger.info("URL feature (Length of sub domain) result  is " + result + ".");
+        log.info("URL feature (Length of sub domain) result  is " + result + ".");
         return result;
     }
 
@@ -110,17 +103,17 @@ public class UrlFeatureUtil {
 
                 JSONArray jsonArray = new JSONArray(jsonString);
                 JSONArray suggestArray = (JSONArray) jsonArray.get(1);
-                this.logger.debug("Google suggestion for [" + target + "] is " + suggestArray);
+                log.debug("Google suggestion for [" + target + "] is " + suggestArray);
                 suggestion = (String) suggestArray.get(0);
 
             } catch (Exception e) {
-                logger.error("Can't not find google suggestion.");
+                log.error("Can't not find google suggestion.");
             } finally {
                 result = Integer.toString(this.commonUtil.calculateLevensteinDist(target, suggestion));
             }
         }
 
-        this.logger.info("URL feature (Levenshtein distance between google suggestion and " + (isPrimary ? "primary" : "sub") + "domain ) result is " + result + ".");
+        log.info("URL feature (Levenshtein distance between google suggestion and " + (isPrimary ? "primary" : "sub") + "domain ) result is " + result + ".");
         return result;
     }
 
@@ -142,12 +135,12 @@ public class UrlFeatureUtil {
                 count++;
             }
 
-            logger.debug("Ping command result is " + input);
+            log.debug("Ping command result is " + input);
             if (!StringUtils.isEmpty(input) && count < 3)
                 result = input.split("ttl=")[1].split(" ")[0];   //FIXME : parsing logic for "icmp_seq=0 ttl=239 time=36.424 ms"
 
         } catch (Exception e) {
-            logger.error("Can't not find ttl value.");
+            log.error("Can't not find ttl value.");
         } finally {
             try {
                 if (process != null) process.destroy();
@@ -156,7 +149,7 @@ public class UrlFeatureUtil {
                 e.printStackTrace();
             }
         }
-        this.logger.info("URL feature (Value of TTL)" + "result is " + result + ".");
+        log.info("URL feature (Value of TTL)" + "result is " + result + ".");
         return result;
     }
 
@@ -166,7 +159,7 @@ public class UrlFeatureUtil {
         try {
             whoisClient.connect(WhoisClient.DEFAULT_HOST);
             String whoisData1 = whoisClient.query("=" + this.urlParser.getHost());
-            this.logger.debug("Whois record of ["+ this.urlParser.getHost()+"] " + whoisData1);
+            log.debug("Whois record of ["+ this.urlParser.getHost()+"] " + whoisData1);
 
             if (!whoisData1.contains("No match for"))
                 result = "1";
@@ -177,7 +170,7 @@ public class UrlFeatureUtil {
             e.printStackTrace();
         }
 
-        this.logger.info("URL feature (Exist whois record)" + "result is " + result + ".");
+        log.info("URL feature (Exist whois record)" + "result is " + result + ".");
         return result;
     }
 
@@ -195,7 +188,7 @@ public class UrlFeatureUtil {
             e.printStackTrace();
         }
 
-        this.logger.info("URL feature (Value of AlexaRank) result is " + result + ".");
+        log.info("URL feature (Value of AlexaRank) result is " + result + ".");
         return result;
     }
 
@@ -206,13 +199,13 @@ public class UrlFeatureUtil {
             result += (target.split(this.badTerms[i]).length - 1);
         }
 
-        this.logger.info("URL feature (Count of bad terms)" + "result is " + result + ".");
+        log.info("URL feature (Count of bad terms)" + "result is " + result + ".");
         return Integer.toString(result);
     }
 
     private String hasPrefixAndSuffix() {
         String result = this.urlParser.getTargetUrl().contains("-") ? "1" : "0";
-        this.logger.info("URL feature (Exist prefix or suffix, Count of '-' in URL) result is " + result + ".");
+        log.info("URL feature (Exist prefix or suffix, Count of '-' in URL) result is " + result + ".");
         return result;
     }
 

@@ -1,27 +1,32 @@
 package com.ovio.extractor.controller;
 
 import com.ovio.extractor.service.FeatureExtractService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(value = "/api/v1/")
+@RequiredArgsConstructor
+@RequestMapping("api/v1")
 public class FeatureExtractContoller {
     private final FeatureExtractService featureExtractService;
 
-    @Autowired
-    public FeatureExtractContoller(FeatureExtractService featureExtractService) {
-        this.featureExtractService = featureExtractService;
+    @GetMapping("urls/{urlId}")
+    public String getUrl(@PathVariable String urlId) {
+        return featureExtractService.getUrl(urlId);
     }
 
-    @RequestMapping(value = "/extract", method = RequestMethod.POST)
+    @PostMapping("urlFeatures/extract")
     public String extractFeatures(@RequestParam String url) throws Exception{
         return featureExtractService.extractFeatures(url);
     }
 
-    @RequestMapping(value = "/extractUsingUrlDatabase", method = RequestMethod.POST)
+    @PostMapping("urlFeatures/extractByRange")
     public String extractAllUrlsFeature(@RequestParam String start, @RequestParam String end) throws Exception {
-        return featureExtractService.extractAllUrlsFeature(start, end);
+        return featureExtractService.extractUrlFeaturesByRange(start, end);
     }
 
+    @GetMapping("urlFeatures/{urlFeatureId}")
+    public String getUrlFeatures(@PathVariable String urlFeatureId) {
+        return featureExtractService.getUrlFeatures(urlFeatureId);
+    }
 }

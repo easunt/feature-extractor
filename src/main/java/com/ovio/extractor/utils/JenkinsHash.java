@@ -1,6 +1,6 @@
 package com.ovio.extractor.utils;
 
-public class JenkinsHash
+class JenkinsHash
 {
 	// max value to limit it to 4 bytes
 	private long MAX_VALUE = 0xFFFFFFFFL;
