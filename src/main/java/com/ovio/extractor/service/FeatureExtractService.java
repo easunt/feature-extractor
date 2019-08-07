@@ -6,8 +6,8 @@ import com.ovio.extractor.respository.UrlFeatureRepository;
 import com.ovio.extractor.respository.UrlRepository;
 import com.ovio.extractor.utils.UrlFeatureUtil;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-import org.thymeleaf.util.StringUtils;
 
 import java.util.List;
 
@@ -30,9 +30,9 @@ public class FeatureExtractService {
 
     public String extractUrlFeaturesByRange(String start, String end) throws Exception {
         List<Url> urls;
-        if (StringUtils.isEmpty(start) && StringUtils.isEmpty(end))
+        if (StringUtils.isBlank(start) && StringUtils.isBlank(end))
             urls = urlRepository.findAll();
-        else if (!StringUtils.isEmpty(start) && StringUtils.isEmpty(end))
+        else if (!StringUtils.isBlank(start) && StringUtils.isBlank(end))
             urls = urlRepository.findAllByIdGreaterThan(Long.valueOf(start));
         else
             urls = urlRepository.findAllByIdIsBetween(Long.valueOf(start), Long.valueOf(end));

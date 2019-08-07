@@ -2,9 +2,9 @@ package com.ovio.extractor.utils;
 
 import com.ovio.extractor.entity.UrlFeature;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.springframework.stereotype.Component;
-import org.thymeleaf.util.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.apache.commons.net.whois.WhoisClient;
@@ -27,7 +27,6 @@ public class UrlFeatureUtil {
     private final String[] badTerms = {"update", "confirm", "user", "customer", "client", "suspend", "restrict",
             "hold", "verify", "account", "login", "username", "password", "ssn", "sosical", "security", "emailID", "emailPASS",
             "phone", "signin", "hotmail", "expires", "notification", "cancellation", "immediately"};
-    private CommonUtil commonUtil = new CommonUtil();
 
     public UrlFeature extractFeatures(String targetUrl, Long urlId) throws Exception {
         this.urlParser = new UrlParser(targetUrl);
@@ -89,7 +88,7 @@ public class UrlFeatureUtil {
         String suggestion = "";
         String result = "0";
 
-        if (!StringUtils.isEmpty(target)) {
+        if (!StringUtils.isBlank(target)) {
             try {
                 URL url = new URL("http://suggestqueries.google.com/complete/search?output=firefox&q=" + target);
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -109,7 +108,7 @@ public class UrlFeatureUtil {
             } catch (Exception e) {
                 log.error("Can't not find google suggestion.");
             } finally {
-                result = Integer.toString(this.commonUtil.calculateLevensteinDist(target, suggestion));
+                result = Integer.toString(CommonUtil.calculateLevensteinDist(target, suggestion));
             }
         }
 
@@ -136,7 +135,7 @@ public class UrlFeatureUtil {
             }
 
             log.debug("Ping command result is " + input);
-            if (!StringUtils.isEmpty(input) && count < 3)
+            if (!StringUtils.isBlank(input) && count < 3)
                 result = input.split("ttl=")[1].split(" ")[0];   //FIXME : parsing logic for "icmp_seq=0 ttl=239 time=36.424 ms"
 
         } catch (Exception e) {

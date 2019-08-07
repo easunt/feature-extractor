@@ -1,7 +1,8 @@
 package com.ovio.extractor.utils;
 
-import org.thymeleaf.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 
 public class UrlParser {
@@ -11,7 +12,7 @@ public class UrlParser {
     private String subDomain = null;
     private String host = null;
 
-    UrlParser(String targetUrl) throws Exception {
+    UrlParser(String targetUrl) throws MalformedURLException {
         this.targetUrl = targetUrl;
         this.urlObj = new URL(targetUrl);
     }
@@ -38,7 +39,7 @@ public class UrlParser {
             String host = this.urlObj.getHost();
             String[] splitArray = host.split(this.primaryDomain + "\\.");
 
-            if (splitArray.length > 0 && !StringUtils.isEmpty(splitArray[0]) && !splitArray[0].equals("www.")) {
+            if (splitArray.length > 0 && !StringUtils.isBlank(splitArray[0]) && !splitArray[0].equals("www.")) {
                 if (splitArray[0].contains("."))
                     this.subDomain = splitArray[0].substring(0, splitArray[0].lastIndexOf('.'));
                 else
@@ -50,7 +51,7 @@ public class UrlParser {
     }
 
     String getPrimaryDomain() {
-        if (StringUtils.isEmpty(this.primaryDomain)) {
+        if (StringUtils.isBlank(this.primaryDomain)) {
             String host = this.urlObj.getHost().replaceAll(".*\\.(?=.*\\.)", "");
             this.primaryDomain = host.split("\\.")[0];
         }
@@ -58,7 +59,7 @@ public class UrlParser {
     }
 
     String getHost() {
-        if (StringUtils.isEmpty(this.host)) {
+        if (StringUtils.isBlank(this.host)) {
             this.host = this.urlObj.getHost().replace(this.getSubDomain() + ".", "").replace("www.", "");
         }
         return this.host;
