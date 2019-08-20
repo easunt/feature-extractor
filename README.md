@@ -12,7 +12,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-![Overview](.images/overview.png)
+<img width="700" alt="overview" src="https://user-images.githubusercontent.com/11645367/63321644-4f847880-c35c-11e9-916e-8cf3cc3e7056.png">
 
 This is a feature extractor module for supervised learning based phishing detection.
 Phishing attacks will be detected by classfication model trained in machine learning.
